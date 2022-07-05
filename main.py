@@ -1,6 +1,8 @@
 # Импортируем библиотеки
 import requests
 from bs4 import BeautifulSoup
+import sqlite3
+import os
 
 def parsing_news(req_user):
 
@@ -63,6 +65,52 @@ def parsing_news(req_user):
         # добавляем +1 к счетчику страниц
         num_of_page += 1
     return dict_of_news_all
+
+
+
+def data_base_add(name_of_db, dict):
+    conn = sqlite3.connect(name_of_db)
+
+    cursor = conn.cursor()
+
+    for news in dict:
+        one_news_title = news['header']
+        one_news_url = news['url']
+        one_news_news = news['news']
+        cursor.execute("insert into table_of_news (title, url, news) VALUES (?, ?, ?)", (one_news_title, one_news_url, one_news_news))
+        conn.commit()
+
+
+def data_base_search_data(text_search):
+# Удаляем предыдущий файл с результатами поиска
+    if os.path.isfile('search_result.txt'):
+        os.remove('search_result.txt')
+# Подключаемся к базе
+    conn = sqlite3.connect('news.sqlite')
+# Создаем курсор
+    cursor = conn.cursor()
+# Пишем текст запроса
+    query = 'select news, title from table_of_news'
+# Выполняем запрос
+    cursor.execute(query)
+# Сохраняем все результаты запроса в переменную
+    data_from_base = cursor.fetchall()
+# Определяем текст поиска для цикла
+    text_search = text_search
+# Задаем счетчик цикла
+    index = 0
+# Сам цикл - ищем по данным в таблице, перебирая кортежи (заголовок, новость)
+    for item in data_from_base:
+        # если текст поиска соответствует заголовку
+        if text_search.lower() in data_from_base[index][1].lower():
+            # открываем файл и пишем в него заголовок и саму новость
+            with open('search_result.txt', 'a', encoding='utf8') as f:
+                f.write(f'"{item[1]}"\n"{item[0]}"\n\n')
+# Увеличиваем счетчик на 1
+        index += 1
+
+
+
 
 
 
