@@ -3,6 +3,10 @@ import requests
 from bs4 import BeautifulSoup
 import sqlite3
 import os
+from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+import pickle
 
 def parsing_news(req_user):
 
@@ -110,6 +114,56 @@ def data_base_search_data(text_search):
         index += 1
 
 
+
+engine = create_engine('sqlite:///:memory:', echo=True)
+
+Base = declarative_base()
+
+
+class Title(Base):
+    __tablename__ = 'title'
+    id = Column(Integer, primary_key=True)
+    title = Column(String)
+
+
+    def __init__(self, title):
+        self.title = title
+
+    def __str__(self):
+        return f'{self.title}'
+
+class Url(Base):
+    __tablename__ = 'url'
+    id = Column(Integer, primary_key=True)
+    url = Column(String)
+
+    def __init__(self, url):
+        self.url = url
+    def __str__(self):
+        return f'{self.url}'
+
+class News(Base):
+    __tablename__ = 'news'
+    id = Column(Integer, primary_key=True)
+    news = Column(String)
+
+    def __init__(self, news):
+        self.news = news
+    def __str__(self):
+        return f'{self.news}'
+
+
+def data_base_add_classes(dict):
+
+    for news in dict:
+        one_news_title = Title(news['header'])
+
+        one_news_url = Url(news['url'])
+
+        one_news_news = News(news['news'])
+
+        with open('main.txt', 'a', encoding='utf8') as f:
+            f.write(f'{one_news_title}\n{one_news_url}\n{one_news_news}\n\n')
 
 
 
