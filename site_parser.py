@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
-from main import parsing_news
+from main import parsing_news, data_base_add, data_base_search_data, data_base_add_classes
+import pickle
 
 app = Flask(__name__)
 
@@ -18,18 +19,16 @@ def contacts():
 
 @app.route('/form/', methods=['GET'])
 def run_get():
-    # with open('main.txt', 'r', encoding='utf8') as f:     #здесь можно раскоментить и выводить данные прямо на странице запроса
-    #     text = f.read()
+
     return render_template('form.html')
-
-
 
 @app.route('/form/', methods=['POST'])
 def run_post():
     text = request.form['input_text']
     dict_of_news = parsing_news(text)
-    with open('main.txt', 'a', encoding='utf8') as f:
-        f.write(f'{dict_of_news}\n')
+
+    data_base_add_classes(dict_of_news)
+
     return render_template('good.html')
 
 
